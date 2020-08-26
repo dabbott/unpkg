@@ -7,6 +7,7 @@ import serveDirectoryMetadata from './actions/serveDirectoryMetadata.js';
 import serveFileBrowser from './actions/serveFileBrowser.js';
 import serveFileMetadata from './actions/serveFileMetadata.js';
 import serveFile from './actions/serveFile.js';
+import serveTarball from './actions/serveTarball.js';
 import serveMainPage from './actions/serveMainPage.js';
 import serveModule from './actions/serveModule.js';
 import serveStats from './actions/serveStats.js';
@@ -74,6 +75,22 @@ export default function createServer() {
           validatePackageName,
           validatePackageVersion,
           serveFileBrowser
+        );
+      })
+    );
+
+    app.use(
+      '/tarball',
+      createApp(app => {
+        app.enable('strict routing');
+
+        app.get(
+          '*',
+          noQuery(),
+          validatePackagePathname,
+          validatePackageName,
+          validatePackageVersion,
+          serveTarball
         );
       })
     );

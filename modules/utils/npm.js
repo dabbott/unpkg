@@ -24,6 +24,10 @@ const cache = new LRUCache({
 
 const notFound = '';
 
+/**
+ * @param {*} options
+ * @returns {Promise<import('http').IncomingMessage>}
+ */
 function get(options) {
   return new Promise((accept, reject) => {
     https.get(options, accept).on('error', reject);
@@ -166,21 +170,7 @@ export async function getPackageConfig(packageName, version, log) {
  * Returns a stream of the tarball'd contents of the given package.
  */
 export async function getPackage(packageName, version, log) {
-  const tarballName = isScopedPackageName(packageName)
-    ? packageName.split('/')[1]
-    : packageName;
-  const tarballURL = `${npmRegistryURL}/${packageName}/-/${tarballName}-${version}.tgz`;
-
-  log.debug('Fetching package for %s from %s', packageName, tarballURL);
-
-  const { hostname, pathname } = url.parse(tarballURL);
-  const options = {
-    agent: agent,
-    hostname: hostname,
-    path: pathname
-  };
-
-  const res = await get(options);
+  const res = await getTarball(packageName, version, log);
 
   if (res.statusCode === 200) {
     const stream = res.pipe(gunzip());
@@ -203,4 +193,30 @@ export async function getPackage(packageName, version, log) {
   log.error(content);
 
   return null;
+}
+
+/**
+ * Fetch the tarball of the given package.
+ *
+ * @param {string} packageName
+ * @param {string} version
+ * @param {any} log
+ * @returns {Promise<import('http').IncomingMessage>}
+ */
+export async function getTarball(packageName, version, log) {
+  const tarballName = isScopedPackageName(packageName)
+    ? packageName.split('/')[1]
+    : packageName;
+  const tarballURL = `${npmRegistryURL}/${packageName}/-/${tarballName}-${version}.tgz`;
+
+  log.debug('Fetching package for %s from %s', packageName, tarballURL);
+
+  const { hostname, pathname } = url.parse(tarballURL);
+  const options = {
+    agent: agent,
+    hostname: hostname,
+    path: pathname
+  };
+
+  return get(options);
 }
