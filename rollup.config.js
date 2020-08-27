@@ -15,10 +15,8 @@ const entryManifest = require('./plugins/entryManifest');
 const pkg = require('./package.json');
 
 const buildId =
-  process.env.BUILD_ID ||
-  execSync('git rev-parse --short HEAD')
-    .toString()
-    .trim();
+  process.env.SOURCE_VERSION ||
+  execSync('git rev-parse --short HEAD').toString().trim();
 
 const manifest = entryManifest();
 
